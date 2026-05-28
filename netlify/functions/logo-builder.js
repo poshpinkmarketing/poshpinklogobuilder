@@ -18,13 +18,17 @@ exports.handler = async (event) => {
       })
     });
     const data = await response.json();
+    console.log("Status:", response.status);
+    console.log("Response:", JSON.stringify(data).slice(0,300));
     const text = (data.content || []).map(b => b.text || "").join("");
+    if (!text) throw new Error("Empty response: " + JSON.stringify(data).slice(0,200));
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ result: text })
     };
   } catch (err) {
+    console.log("Error:", err.message);
     return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
   }
 };
