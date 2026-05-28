@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { jsPDF } from "jspdf";
 
-const PAYMENT_LINK = "https://poshpinklogobuilder.netlify.app/?paid=true";
+const PAYMENT_LINK = "https://www.poshpinkmarketing.com/product-page/posh-pink-logo-builder";
 const PRICE = "$47";
 
 const C = {
