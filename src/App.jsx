@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { jsPDF } from "jspdf";
 
 const PAYMENT_LINK = "https://www.poshpinkmarketing.com/product-page/posh-pink-logo-builder";
-const PRICE = "$67";
+const PRICE = "$47";
 
 const C = {
   hotPink:   "#ff1493",
@@ -102,77 +102,130 @@ const Spinner = ({msg}) => (
   </div>
 );
 
-// Generate SVG logo from AI data
+// Generate sophisticated SVG logo from AI data
 const buildSVG = (logo, bizName, tagline) => {
-  const { style, primaryColor, secondaryColor, accentColor, fontStyle, iconType, layout } = logo;
   const name = bizName || "Your Brand";
   const short = name.split(" ").map(w=>w[0]).join("").toUpperCase().slice(0,2);
-  const nameDisplay = name.length > 20 ? name.slice(0,18)+"…" : name;
-  const tagDisplay = tagline && tagline.length > 0 ? (tagline.length > 25 ? tagline.slice(0,23)+"…" : tagline) : "";
+  const words = name.split(" ");
+  const line1 = words.slice(0, Math.ceil(words.length/2)).join(" ");
+  const line2 = words.slice(Math.ceil(words.length/2)).join(" ");
+  const nameShort = name.length > 18 ? name.slice(0,16)+"." : name;
+  const tag = tagline || "";
+  const p = logo.primaryColor || C.hotPink;
+  const s = logo.secondaryColor || C.plum;
+  const a = logo.accentColor || C.softPink;
+  const id = Math.random().toString(36).slice(2,8);
+  const svgStyle = logo.svgStyle || "badge";
 
-  const pc = primaryColor || C.hotPink;
-  const sc = secondaryColor || C.berry;
-  const ac = accentColor || C.softPink;
+  const styles = {
+    badge: `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
+      <defs>
+        <radialGradient id="bg${id}" cx="50%" cy="40%" r="60%">
+          <stop offset="0%" stop-color="${p}" stop-opacity="0.18"/>
+          <stop offset="100%" stop-color="${s}" stop-opacity="0.08"/>
+        </radialGradient>
+        <linearGradient id="ring${id}" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="${p}"/>
+          <stop offset="50%" stop-color="${a}"/>
+          <stop offset="100%" stop-color="${s}"/>
+        </linearGradient>
+      </defs>
+      <circle cx="150" cy="150" r="130" fill="url(#bg${id})"/>
+      <circle cx="150" cy="150" r="128" fill="none" stroke="url(#ring${id})" stroke-width="2.5"/>
+      <circle cx="150" cy="150" r="112" fill="none" stroke="${p}" stroke-width="0.7" stroke-dasharray="4,3"/>
+      <circle cx="150" cy="150" r="100" fill="none" stroke="${s}" stroke-width="1"/>
+      <polygon points="150,18 156,28 150,38 144,28" fill="${p}"/>
+      <polygon points="150,262 156,272 150,282 144,272" fill="${p}"/>
+      <polygon points="18,150 28,156 38,150 28,144" fill="${p}"/>
+      <polygon points="262,150 272,156 282,150 272,144" fill="${p}"/>
+      <text x="150" y="138" text-anchor="middle" font-family="Georgia,serif" font-size="52" font-weight="bold" fill="${s}" letter-spacing="4">${short}</text>
+      <line x1="80" y1="175" x2="220" y2="175" stroke="${p}" stroke-width="0.8"/>
+      <text x="150" y="193" text-anchor="middle" font-family="Georgia,serif" font-size="13" fill="${s}" letter-spacing="3">${nameShort.toUpperCase()}</text>
+      <line x1="80" y1="200" x2="220" y2="200" stroke="${p}" stroke-width="0.8"/>
+      ${tag ? `<text x="150" y="218" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" fill="${p}" letter-spacing="2" font-style="italic">${tag}</text>` : ""}
+    </svg>`,
 
-  // Font style mapping
-  const headFont = fontStyle === "serif" ? "Georgia, serif" :
-                   fontStyle === "script" ? "Georgia, serif" :
-                   fontStyle === "slab" ? "Georgia, serif" : "Arial, sans-serif";
-  const fontStyle2 = fontStyle === "script" ? "italic" : "normal";
+    geometric: `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180" viewBox="0 0 320 180">
+      <defs>
+        <linearGradient id="geo${id}" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="${p}"/>
+          <stop offset="100%" stop-color="${s}"/>
+        </linearGradient>
+      </defs>
+      <polygon points="20,90 52,50 52,130" fill="url(#geo${id})" opacity="0.9"/>
+      <polygon points="25,90 50,56 50,124" fill="none" stroke="${a}" stroke-width="1"/>
+      <line x1="68" y1="40" x2="68" y2="140" stroke="${p}" stroke-width="1.5"/>
+      <text x="82" y="${words.length > 1 ? "82" : "100"}" font-family="Arial,sans-serif" font-size="${name.length > 12 ? "22" : "26"}" font-weight="900" fill="${s}" letter-spacing="2">${line1.toUpperCase()}</text>
+      ${words.length > 1 ? `<text x="82" y="112" font-family="Arial,sans-serif" font-size="${name.length > 12 ? "22" : "26"}" font-weight="900" fill="${p}" letter-spacing="2">${line2.toUpperCase()}</text>` : ""}
+      <rect x="82" y="122" width="220" height="3" fill="url(#geo${id})" rx="1.5"/>
+      ${tag ? `<text x="82" y="142" font-family="Arial,sans-serif" font-size="10" fill="${p}" letter-spacing="3">${tag.toUpperCase()}</text>` : ""}
+    </svg>`,
 
-  // Generate different icon types
-  const icons = {
-    circle: `<circle cx="40" cy="40" r="32" fill="${pc}" opacity="0.15" stroke="${pc}" stroke-width="2"/>
-             <circle cx="40" cy="40" r="20" fill="none" stroke="${pc}" stroke-width="1.5"/>
-             <text x="40" y="46" text-anchor="middle" font-family="${headFont}" font-style="${fontStyle2}" font-size="16" font-weight="bold" fill="${sc}">${short}</text>`,
+    minimal: `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="160" viewBox="0 0 300 160">
+      <defs>
+        <linearGradient id="min${id}" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="${p}" stop-opacity="0"/>
+          <stop offset="50%" stop-color="${p}" stop-opacity="1"/>
+          <stop offset="100%" stop-color="${p}" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <line x1="150" y1="18" x2="150" y2="38" stroke="${p}" stroke-width="0.8"/>
+      <circle cx="150" cy="14" r="3" fill="${p}"/>
+      <circle cx="150" cy="42" r="1.5" fill="${a}"/>
+      <text x="150" y="${tag ? "82" : "88"}" text-anchor="middle" font-family="Georgia,serif" font-style="italic" font-size="${name.length > 14 ? "20" : "24"}" fill="${s}" letter-spacing="3">${name}</text>
+      <line x1="40" y1="${tag ? "92" : "98"}" x2="260" y2="${tag ? "92" : "98"}" stroke="url(#min${id})" stroke-width="0.8"/>
+      ${tag ? `<text x="150" y="108" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" fill="${p}" letter-spacing="4">${tag.toUpperCase()}</text>` : ""}
+      <circle cx="32" cy="${tag ? "92" : "98"}" r="3" fill="${p}"/>
+      <circle cx="268" cy="${tag ? "92" : "98"}" r="3" fill="${p}"/>
+      <circle cx="150" cy="${tag ? "122" : "116"}" r="1.5" fill="${a}"/>
+      <line x1="150" y1="${tag ? "126" : "120"}" x2="150" y2="${tag ? "146" : "140"}" stroke="${p}" stroke-width="0.8"/>
+      <circle cx="150" cy="${tag ? "150" : "144"}" r="3" fill="${p}"/>
+    </svg>`,
 
-    diamond: `<polygon points="40,8 72,40 40,72 8,40" fill="${pc}" opacity="0.12" stroke="${pc}" stroke-width="2"/>
-              <polygon points="40,20 60,40 40,60 20,40" fill="none" stroke="${sc}" stroke-width="1"/>
-              <text x="40" y="46" text-anchor="middle" font-family="${headFont}" font-style="${fontStyle2}" font-size="14" font-weight="bold" fill="${sc}">${short}</text>`,
+    script: `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="200" viewBox="0 0 320 200">
+      <defs>
+        <linearGradient id="scr${id}" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="${p}" stop-opacity="0.15"/>
+          <stop offset="100%" stop-color="${s}" stop-opacity="0.05"/>
+        </linearGradient>
+      </defs>
+      <polygon points="160,10 310,100 160,190 10,100" fill="url(#scr${id})"/>
+      <polygon points="160,18 298,100 160,182 22,100" fill="none" stroke="${p}" stroke-width="1" stroke-dasharray="5,4"/>
+      <text x="160" y="80" text-anchor="middle" font-family="Georgia,serif" font-style="italic" font-size="56" font-weight="bold" fill="${s}" opacity="0.12">${short}</text>
+      <text x="160" y="88" text-anchor="middle" font-family="Georgia,serif" font-style="italic" font-size="${name.length > 14 ? "18" : "22"}" fill="${s}" letter-spacing="2">${name}</text>
+      <line x1="60" y1="100" x2="100" y2="100" stroke="${p}" stroke-width="1"/>
+      <line x1="220" y1="100" x2="260" y2="100" stroke="${p}" stroke-width="1"/>
+      <circle cx="55" cy="100" r="2.5" fill="${p}"/>
+      <circle cx="265" cy="100" r="2.5" fill="${p}"/>
+      ${tag ? `<text x="160" y="120" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" fill="${p}" letter-spacing="3">${tag.toUpperCase()}</text>` : ""}
+      <line x1="10" y1="100" x2="30" y2="80" stroke="${a}" stroke-width="0.6"/>
+      <line x1="310" y1="100" x2="290" y2="80" stroke="${a}" stroke-width="0.6"/>
+    </svg>`,
 
-    hexagon: `<polygon points="40,8 68,24 68,56 40,72 12,56 12,24" fill="${pc}" opacity="0.12" stroke="${pc}" stroke-width="2"/>
-              <text x="40" y="46" text-anchor="middle" font-family="${headFont}" font-style="${fontStyle2}" font-size="16" font-weight="bold" fill="${sc}">${short}</text>`,
-
-    square: `<rect x="10" y="10" width="60" height="60" rx="8" fill="${pc}" opacity="0.12" stroke="${pc}" stroke-width="2"/>
-             <rect x="20" y="20" width="40" height="40" rx="4" fill="none" stroke="${sc}" stroke-width="1"/>
-             <text x="40" y="46" text-anchor="middle" font-family="${headFont}" font-style="${fontStyle2}" font-size="16" font-weight="bold" fill="${sc}">${short}</text>`,
-
-    crown: `<path d="M10,60 L20,25 L40,45 L60,25 L70,60 Z" fill="${pc}" opacity="0.15" stroke="${pc}" stroke-width="2"/>
-            <circle cx="10" cy="25" r="4" fill="${pc}"/>
-            <circle cx="40" cy="20" r="4" fill="${pc}"/>
-            <circle cx="70" cy="25" r="4" fill="${pc}"/>
-            <text x="40" y="58" text-anchor="middle" font-family="${headFont}" font-size="11" font-weight="bold" fill="${sc}">${short}</text>`,
+    monogram: `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="220" viewBox="0 0 300 220">
+      <defs>
+        <linearGradient id="mon${id}" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="${p}"/>
+          <stop offset="100%" stop-color="${s}"/>
+        </linearGradient>
+        <linearGradient id="monbg${id}" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="${p}" stop-opacity="0.12"/>
+          <stop offset="100%" stop-color="${s}" stop-opacity="0.06"/>
+        </linearGradient>
+      </defs>
+      <circle cx="150" cy="100" r="85" fill="url(#monbg${id})"/>
+      <circle cx="150" cy="100" r="85" fill="none" stroke="${p}" stroke-width="1.5"/>
+      <circle cx="150" cy="100" r="72" fill="none" stroke="${a}" stroke-width="0.6" stroke-dasharray="3,4"/>
+      <text x="150" y="126" text-anchor="middle" font-family="Georgia,serif" font-size="88" font-weight="bold" fill="url(#mon${id})" opacity="0.85">${short[0]}</text>
+      ${short.length > 1 ? `<text x="178" y="118" text-anchor="middle" font-family="Georgia,serif" font-size="52" font-weight="bold" fill="${s}" opacity="0.4">${short[1]}</text>` : ""}
+      <rect x="50" y="194" width="200" height="1" fill="${p}" opacity="0.4"/>
+      <text x="150" y="212" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="${s}" letter-spacing="4" font-weight="600">${nameShort.toUpperCase()}</text>
+    </svg>`
   };
 
-  const iconSVG = icons[iconType] || icons.circle;
-
-  // Layout variations
-  if (layout === "stacked") {
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="280" height="160" viewBox="0 0 280 160">
-      <g transform="translate(100,8)">${iconSVG}</g>
-      <text x="140" y="104" text-anchor="middle" font-family="${headFont}" font-style="${fontStyle2}" font-size="22" font-weight="bold" fill="${sc}">${nameDisplay}</text>
-      ${tagDisplay ? `<line x1="60" y1="112" x2="220" y2="112" stroke="${ac}" stroke-width="0.8"/>
-      <text x="140" y="126" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" fill="${pc}" letter-spacing="2">${tagDisplay.toUpperCase()}</text>` : ""}
-    </svg>`;
-  } else if (layout === "inline") {
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="100" viewBox="0 0 300 100">
-      <g transform="translate(10,12) scale(0.95)">${iconSVG}</g>
-      <text x="100" y="44" font-family="${headFont}" font-style="${fontStyle2}" font-size="20" font-weight="bold" fill="${sc}">${nameDisplay}</text>
-      ${tagDisplay ? `<text x="100" y="62" font-family="Arial,sans-serif" font-size="9" fill="${pc}" letter-spacing="2">${tagDisplay.toUpperCase()}</text>` : ""}
-      <line x1="100" y1="68" x2="290" y2="68" stroke="${ac}" stroke-width="0.8"/>
-    </svg>`;
-  } else {
-    // text-focus
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="280" height="120" viewBox="0 0 280 120">
-      <line x1="20" y1="38" x2="260" y2="38" stroke="${ac}" stroke-width="0.8"/>
-      <text x="140" y="72" text-anchor="middle" font-family="${headFont}" font-style="${fontStyle2}" font-size="28" font-weight="bold" fill="${sc}">${nameDisplay}</text>
-      <line x1="20" y1="82" x2="260" y2="82" stroke="${ac}" stroke-width="0.8"/>
-      ${tagDisplay ? `<text x="140" y="100" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" fill="${pc}" letter-spacing="3">${tagDisplay.toUpperCase()}</text>` : ""}
-      <circle cx="16" cy="60" r="4" fill="${pc}"/>
-      <circle cx="264" cy="60" r="4" fill="${pc}"/>
-    </svg>`;
-  }
+  return styles[svgStyle] || styles.badge;
 };
+
 
 // Logo preview card
 const LogoCard = ({logo, index, bizName, tagline, selected, onSelect}) => {
@@ -493,14 +546,13 @@ Return ONLY valid JSON (no markdown, no preamble):
       "secondaryColor": "#HEXCODE",
       "accentColor": "#HEXCODE",
       "fontStyle": "sans-serif OR serif OR script OR slab",
-      "iconType": "circle OR diamond OR hexagon OR square OR crown",
-      "layout": "stacked OR inline OR text-focus"
+      "svgStyle": "badge OR geometric OR minimal OR script OR monogram"
     }
   ]
 }
 
 Rules:
-- All 5 concepts must use DIFFERENT combinations of iconType and layout
+- All 5 concepts must use DIFFERENT svgStyle values (badge, geometric, minimal, script, monogram — one each)
 - Colors must match their stated preferences
 - Each concept must feel genuinely different from the others
 - All hex codes must be valid 6-digit hex values
