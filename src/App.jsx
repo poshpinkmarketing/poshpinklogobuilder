@@ -264,187 +264,171 @@ const downloadSVG = (svg, name, index) => {
 // Download all as PDF style guide
 const downloadPDF = (logos, bizName, tagline, answers) => {
   const doc = new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
-  const W=210,H=297,M=16;
+  const W=210,H=297,M=18;
   const hexRgb = h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+  const PLUM = "#4b1528";
+  const PINK = "#ff69b4";
+  const WHITE = "#ffffff";
+  const TEXT = "#4b1528";
 
-  // Header
-  doc.setFillColor(...hexRgb(C.plum)); doc.rect(0,0,W,40,"F");
-  doc.setFillColor(...hexRgb(C.plum)); doc.rect(0,0,4,H,"F");
-  doc.setFillColor(...hexRgb(C.blush)); doc.rect(0,40,W,H-40,"F");
-  doc.setFont("helvetica","bolditalic"); doc.setFontSize(22); doc.setTextColor(...hexRgb(C.white));
-  doc.text((bizName||"Your Brand").slice(0,28), M+2, 20);
-  doc.setFont("helvetica","normal"); doc.setFontSize(7); doc.setTextColor(...hexRgb(C.softPink));
-  doc.setCharSpace(2); doc.text("POSH PINK LOGO BUILDER — LOGO CONCEPTS", M+2, 30); doc.setCharSpace(0);
-  doc.setTextColor(...hexRgb(C.bubblegum));
-  doc.text("poshpinkmarketing.com", W-M, 30, {align:"right"});
+  // White background
+  doc.setFillColor(...hexRgb(WHITE)); doc.rect(0,0,W,H,"F");
 
-  let y = 50;
+  // Gradient-style border: plum left bar, pink right bar, top/bottom lines
+  doc.setFillColor(...hexRgb(PLUM)); doc.rect(0,0,6,H,"F");
+  doc.setFillColor(...hexRgb(PINK)); doc.rect(W-6,0,6,H,"F");
+  doc.setDrawColor(...hexRgb(PLUM)); doc.setLineWidth(2); doc.line(0,0,W,0);
+  doc.setDrawColor(...hexRgb(PINK)); doc.setLineWidth(2); doc.line(0,H,W,H);
 
-  // Intro
-  doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor(...hexRgb(C.inkMid));
-  doc.text("Your 5 custom logo concepts are shown below. Share these with a designer to bring them to life,", M, y);
-  doc.text("or use them directly in Canva by recreating the style that resonates most.", M, y+5);
-  y += 16;
+  // Header band
+  doc.setFillColor(...hexRgb(PLUM)); doc.rect(6,0,W-12,48,"F");
 
-  // Color palette from logos
-  doc.setDrawColor(...hexRgb(C.softPink)); doc.setLineWidth(0.4); doc.line(M, y-3, W-M, y-3);
-  doc.setFont("helvetica","bold"); doc.setFontSize(7); doc.setTextColor(...hexRgb(C.berry));
-  doc.setCharSpace(2); doc.text("YOUR RECOMMENDED COLOR PALETTE", M, y+2); doc.setCharSpace(0);
-  y += 10;
+  // Business name centered
+  doc.setFont("helvetica","bold"); doc.setFontSize(26); doc.setTextColor(...hexRgb(WHITE));
+  doc.text((bizName||"Your Brand").slice(0,28), W/2, 22, {align:"center"});
 
-  const colors = [logos[0]?.primaryColor, logos[0]?.secondaryColor, logos[0]?.accentColor, logos[1]?.primaryColor].filter(Boolean);
-  colors.forEach((hex,i) => {
+  // Subtitle
+  doc.setFont("helvetica","bold"); doc.setFontSize(8); doc.setTextColor(...hexRgb(PINK));
+  doc.text("POSH PINK LOGO BUILDER — BRAND REFERENCE GUIDE", W/2, 34, {align:"center"});
+
+  // Tagline if present
+  if(tagline) {
+    doc.setFont("helvetica","italic"); doc.setFontSize(8); doc.setTextColor(...hexRgb(WHITE));
+    doc.text(tagline, W/2, 42, {align:"center"});
+  }
+
+  let y = 58;
+
+  // Section header helper — centered, bold, with plum-to-pink line
+  const sec = (label, yy) => {
+    doc.setDrawColor(...hexRgb(PLUM)); doc.setLineWidth(0.8); doc.line(M, yy-3, W/2-2, yy-3);
+    doc.setDrawColor(...hexRgb(PINK)); doc.setLineWidth(0.8); doc.line(W/2+2, yy-3, W-M, yy-3);
+    doc.setFont("helvetica","bold"); doc.setFontSize(8); doc.setTextColor(...hexRgb(PLUM));
+    doc.text(label.toUpperCase(), W/2, yy, {align:"center"});
+    return yy + 9;
+  };
+
+  // Intro note — centered
+  doc.setFont("helvetica","bold"); doc.setFontSize(8.5); doc.setTextColor(...hexRgb(TEXT));
+  doc.text("Your 5 logo concepts are available as individual SVG downloads.", W/2, y, {align:"center"});
+  doc.text("Use this guide as your brand reference for colors, style and next steps.", W/2, y+6, {align:"center"});
+  y += 18;
+
+  // COLOR PALETTE — centered
+  y = sec("Your Signature Color Palette", y);
+  const cols = [
+    logos[0]?.primaryColor, logos[0]?.secondaryColor, logos[0]?.accentColor,
+    logos[1]?.primaryColor, logos[2]?.primaryColor
+  ].filter((c,i,a) => c && a.indexOf(c)===i).slice(0,5);
+
+  const swW=28, swH=22, swGap=5;
+  const totalSwW = cols.length*(swW+swGap)-swGap;
+  const swStartX = (W-totalSwW)/2;
+  cols.forEach((hex,i) => {
     try {
-      const sx = M + i*34;
-      doc.setFillColor(...hexRgb(hex)); doc.rect(sx,y,28,16,"F");
-      doc.setFontSize(5); 
+      const sx = swStartX + i*(swW+swGap);
+      doc.setFillColor(...hexRgb(hex)); doc.rect(sx,y,swW,swH,"F");
+      doc.setDrawColor(...hexRgb(PLUM)); doc.setLineWidth(0.4); doc.rect(sx,y,swW,swH);
       const rgb=hexRgb(hex); const lum=0.299*rgb[0]+0.587*rgb[1]+0.114*rgb[2];
-      const tc=lum>140?hexRgb(C.inkMid):hexRgb(C.white);
-      doc.setTextColor(tc[0],tc[1],tc[2]);
-      doc.text(hex, sx+14, y+10, {align:"center"});
+      const tc=lum>140?hexRgb(TEXT):hexRgb(WHITE);
+      doc.setTextColor(tc[0],tc[1],tc[2]); doc.setFont("helvetica","bold"); doc.setFontSize(5.5);
+      doc.text(hex, sx+swW/2, y+swH-4, {align:"center"});
     } catch(e){}
   });
-  y += 24;
+  y += swH + 10;
 
-  // Logo concepts — draw each one natively in PDF
-  doc.setDrawColor(...hexRgb(C.softPink)); doc.setLineWidth(0.4); doc.line(M, y-3, W-M, y-3);
-  doc.setFont("helvetica","bold"); doc.setFontSize(7); doc.setTextColor(...hexRgb(C.berry));
-  doc.setCharSpace(2); doc.text("LOGO CONCEPTS — STYLE DIRECTIONS", M, y+2); doc.setCharSpace(0);
+  // LOGO STYLE DIRECTIONS — centered
+  y = sec("Your 5 Logo Style Directions", y);
+  doc.setFont("helvetica","bold"); doc.setFontSize(8); doc.setTextColor(...hexRgb(TEXT));
+  doc.text("Download your SVG files from the quiz page to see the full designs.", W/2, y, {align:"center"});
   y += 10;
 
-  const cbW2 = (W-M*2-8)/3;
-  // Draw 5 concepts — first row 3, second row 2
   logos.forEach((logo,i) => {
-    const row = i < 3 ? 0 : 1;
-    const col = i < 3 ? i : i-3;
-    const rowY = y + row * 58;
-    const cx = M + col*(cbW2+4);
-    const bH = 52;
+    if(y > H-45) return;
+    const p = logo.primaryColor||PLUM;
+    const rowH = 24;
 
-    // Only draw row 2 offset if we have enough logos
-    const bxReal = i < 3 ? cx : M + (col*(cbW2+4)) + cbW2/2 - cbW2/2 + (i===3 ? 0 : cbW2+4);
+    // Concept box — full width, centered content
+    doc.setFillColor(...hexRgb(WHITE));
+    doc.rect(M, y, W-M*2, rowH, "F");
+    doc.setDrawColor(...hexRgb(PLUM)); doc.setLineWidth(0.4);
+    doc.rect(M, y, W-M*2, rowH);
 
-    const p = logo.primaryColor||C.hotPink;
-    const s = logo.secondaryColor||C.plum;
-    const a = logo.accentColor||C.softPink;
-    const nm = (bizName||"Brand").slice(0,12);
-    const sh = (bizName||"B").split(" ").map(w=>w[0]).join("").toUpperCase().slice(0,2);
+    // Left color accent bar
+    try { doc.setFillColor(...hexRgb(p)); } catch(e) { doc.setFillColor(...hexRgb(PLUM)); }
+    doc.rect(M, y, 3, rowH, "F");
 
-    // Box
-    doc.setFillColor(...hexRgb(C.white));
-    doc.rect(bxReal, rowY, cbW2, bH, "F");
-    doc.setDrawColor(...hexRgb(C.softPink));
-    doc.setLineWidth(0.4);
-    doc.rect(bxReal, rowY, cbW2, bH);
+    // Right pink accent bar
+    doc.setFillColor(...hexRgb(PINK));
+    doc.rect(W-M-3, y, 3, rowH, "F");
 
-    // Color top bar
-    try { doc.setFillColor(...hexRgb(p)); } catch(e) { doc.setFillColor(...hexRgb(C.hotPink)); }
-    doc.rect(bxReal, rowY, cbW2, 2, "F");
+    // Concept label — centered
+    doc.setFont("helvetica","bold"); doc.setFontSize(7.5); doc.setTextColor(...hexRgb(PLUM));
+    doc.text("CONCEPT "+["A","B","C","D","E"][i]+" — "+(logo.styleName||""), W/2, y+8, {align:"center"});
 
-    // Concept label
-    doc.setFont("helvetica","bold"); doc.setFontSize(6); doc.setTextColor(...hexRgb(C.berry));
-    doc.setCharSpace(1.2);
-    doc.text("CONCEPT "+["A","B","C","D","E"][i], bxReal+cbW2/2, rowY+7, {align:"center"});
-    doc.setCharSpace(0);
+    // Description — centered
+    doc.setFont("helvetica","bold"); doc.setFontSize(7); doc.setTextColor(...hexRgb(TEXT));
+    const dl = doc.splitTextToSize(logo.description||"", W-M*2-16);
+    doc.text(dl[0]||"", W/2, y+16, {align:"center"});
 
-    // Draw logo icon centered in box
-    const iconX = bxReal + cbW2/2;
-    const iconY = rowY + 22;
-    const style = logo.svgStyle || "badge";
-
-    try {
-      if(style === "badge" || style === "monogram") {
-        // Circle with monogram
-        doc.setFillColor(...hexRgb(p));
-        doc.setGState(doc.GState({opacity:0.12}));
-        doc.circle(iconX, iconY, 9, "F");
-        doc.setGState(doc.GState({opacity:1}));
-        doc.setDrawColor(...hexRgb(p));
-        doc.setLineWidth(1);
-        doc.circle(iconX, iconY, 9, "S");
-        doc.setLineWidth(0.4);
-        doc.circle(iconX, iconY, 7, "S");
-        doc.setFont("helvetica","bold"); doc.setFontSize(8);
-        doc.setTextColor(...hexRgb(s));
-        doc.text(sh, iconX, iconY+3, {align:"center"});
-      } else if(style === "geometric") {
-        // Bold triangle accent + text
-        doc.setFillColor(...hexRgb(p));
-        doc.setGState(doc.GState({opacity:0.8}));
-        doc.triangle(iconX-12, iconY+7, iconX-5, iconY-7, iconX-5, iconY+7, "F");
-        doc.setGState(doc.GState({opacity:1}));
-        doc.setFont("helvetica","bold"); doc.setFontSize(7);
-        doc.setTextColor(...hexRgb(s));
-        doc.text(nm.toUpperCase(), iconX+2, iconY+3, {align:"left"});
-        doc.setFillColor(...hexRgb(p));
-        doc.rect(iconX-5, iconY+8, cbW2-8, 1.5, "F");
-      } else if(style === "minimal") {
-        // Elegant lines with name
-        doc.setDrawColor(...hexRgb(p));
-        doc.setLineWidth(0.6);
-        doc.line(bxReal+6, iconY-4, bxReal+cbW2-6, iconY-4);
-        doc.setFont("helvetica","italic"); doc.setFontSize(8);
-        doc.setTextColor(...hexRgb(s));
-        doc.text(nm, iconX, iconY+3, {align:"center"});
-        doc.line(bxReal+6, iconY+7, bxReal+cbW2-6, iconY+7);
-        doc.setFillColor(...hexRgb(p));
-        doc.circle(bxReal+4, iconY+1.5, 2, "F");
-        doc.circle(bxReal+cbW2-4, iconY+1.5, 2, "F");
-      } else if(style === "script") {
-        // Diamond outline with name
-        doc.setFillColor(...hexRgb(p));
-        doc.setGState(doc.GState({opacity:0.1}));
-        doc.triangle(iconX, iconY-10, iconX+10, iconY, iconX, iconY+10, "F");
-        doc.triangle(iconX, iconY-10, iconX-10, iconY, iconX, iconY+10, "F");
-        doc.setGState(doc.GState({opacity:1}));
-        doc.setDrawColor(...hexRgb(p));
-        doc.setLineWidth(0.8);
-        doc.line(iconX, iconY-10, iconX+10, iconY);
-        doc.line(iconX+10, iconY, iconX, iconY+10);
-        doc.line(iconX, iconY+10, iconX-10, iconY);
-        doc.line(iconX-10, iconY, iconX, iconY-10);
-        doc.setFont("helvetica","bolditalic"); doc.setFontSize(7);
-        doc.setTextColor(...hexRgb(s));
-        doc.text(sh, iconX, iconY+2.5, {align:"center"});
-      }
-    } catch(e) {}
-
-    // Business name below icon
-    doc.setFont("helvetica","italic"); doc.setFontSize(6.5);
-    doc.setTextColor(...hexRgb(s));
-    doc.text(nm, iconX, rowY+bH-5, {align:"center"});
+    y += rowH + 4;
   });
-  y += 120;
 
-  // Usage tips
-  if(y < H-50){
-    doc.setDrawColor(...hexRgb(C.softPink)); doc.setLineWidth(0.4); doc.line(M, y-3, W-M, y-3);
-    doc.setFont("helvetica","bold"); doc.setFontSize(7); doc.setTextColor(...hexRgb(C.berry));
-    doc.setCharSpace(2); doc.text("NEXT STEPS", M, y+2); doc.setCharSpace(0);
-    y += 10;
+  y += 4;
+
+  // BRAND PREFERENCES — centered
+  if(y < H-65) {
+    y = sec("Your Brand Preferences", y);
+    const prefs = [
+      {label:"Industry", val: answers?.industry||""},
+      {label:"Style", val: (answers?.style||[]).join(", ")},
+      {label:"Colors", val: (answers?.colors||[]).join(", ")},
+      {label:"Feeling", val: answers?.feel||""},
+    ].filter(p=>p.val);
+
+    prefs.forEach(p => {
+      if(y > H-40) return;
+      doc.setFont("helvetica","bold"); doc.setFontSize(8); doc.setTextColor(...hexRgb(PLUM));
+      doc.text(p.label.toUpperCase()+": ", W/2, y+4, {align:"center"});
+      const labelW = doc.getTextWidth(p.label.toUpperCase()+": ");
+      doc.setFont("helvetica","bold"); doc.setFontSize(8); doc.setTextColor(...hexRgb(TEXT));
+      const val = p.val.length > 50 ? p.val.slice(0,48)+"..." : p.val;
+      doc.text(p.label.toUpperCase()+": "+val, W/2, y+4, {align:"center"});
+      y += 9;
+    });
+    y += 4;
+  }
+
+  // NEXT STEPS — centered
+  if(y < H-60) {
+    y = sec("Next Steps", y);
     const tips = [
-      "Share your favorite concept with a graphic designer to recreate as a professional vector file.",
-      "Use the color hex codes above to stay consistent across all your marketing materials.",
-      "Try recreating your chosen concept in Canva using the style direction as a guide.",
-      "Need a full brand kit? Visit poshpinkbrandkitbuilder.netlify.app for colors, fonts & more.",
+      "Download all 5 logo SVGs from your quiz results page.",
+      "Share your favorite with a designer to recreate as a polished final file.",
+      "Use the hex codes above consistently across all your marketing.",
+      "Get your full brand kit at poshpinkbrandkitbuilder.netlify.app",
     ];
     tips.forEach((tip,i) => {
-      doc.setFont("helvetica","bolditalic"); doc.setFontSize(8); doc.setTextColor(...hexRgb(C.hotPink));
-      doc.text("0"+(i+1), M, y+4);
-      doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(...hexRgb(C.inkMid));
-      const tl = doc.splitTextToSize(tip, W-M*2-10);
-      doc.text(tl, M+9, y+4);
-      y += tl.length*4+6;
+      if(y > H-28) return;
+      doc.setFont("helvetica","bold"); doc.setFontSize(8); doc.setTextColor(...hexRgb(PINK));
+      doc.text("0"+(i+1), M+4, y+4);
+      doc.setFont("helvetica","bold"); doc.setFontSize(8); doc.setTextColor(...hexRgb(TEXT));
+      const tl = doc.splitTextToSize(tip, W-M*2-14);
+      doc.text(tl, W/2, y+4, {align:"center"});
+      y += tl.length*4.5+6;
     });
   }
 
   // Footer
-  doc.setFillColor(...hexRgb(C.plum)); doc.rect(0,H-14,W,14,"F");
-  doc.setFont("helvetica","italic"); doc.setFontSize(7); doc.setTextColor(...hexRgb(C.softPink));
-  doc.text("Crafted with love by Posh Pink Marketing  ·  poshpinkmarketing.com  ·  info@poshpinkmarketing.com",W/2,H-6,{align:"center"});
+  doc.setFillColor(...hexRgb(PLUM)); doc.rect(6,H-18,W-12,18,"F");
+  doc.setFont("helvetica","bold"); doc.setFontSize(8); doc.setTextColor(...hexRgb(WHITE));
+  doc.text("www.poshpinkmarketing.com", W/2, H-10, {align:"center"});
+  doc.setFont("helvetica","bold"); doc.setFontSize(7); doc.setTextColor(...hexRgb(PINK));
+  doc.text("hello@poshpinkmarketing.com", W/2, H-4, {align:"center"});
 
-  doc.save(`${(bizName||"logo").replace(/\s+/g,"-").toLowerCase()}-logo-concepts.pdf`);
+  doc.save(`${(bizName||"logo").replace(/\s+/g,"-").toLowerCase()}-brand-reference.pdf`);
 };
+
 
 // Teaser
 const Teaser = ({logos, bizName, tagline, onPay}) => (
@@ -500,7 +484,7 @@ const FullResults = ({logos, bizName, tagline, answers}) => {
 
       <div style={{background:C.white,padding:"36px 44px 32px",borderBottom:`1px solid ${C.softPink}`}}>
         <p style={{fontFamily:"'Cormorant SC',serif",fontSize:11,letterSpacing:".22em",color:C.berry,marginBottom:8}}>YOUR 5 LOGO CONCEPTS</p>
-        <p style={{fontFamily:"'Raleway',sans-serif",fontSize:12,color:C.inkLight,marginBottom:24,lineHeight:1.8}}>Click a concept to select it, then download as SVG — a professional scalable file you can use anywhere.</p>
+        <p style={{fontFamily:"'Raleway',sans-serif",fontSize:12,color:C.inkLight,marginBottom:24,lineHeight:1.8}}>Click any concept to select it, then download as an SVG file. For best results, download each logo individually as SVG, then use the PDF as your brand reference guide.</p>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:14}}>
           {logos.slice(0,4).map((logo,i)=>(
             <LogoCard key={i} logo={logo} index={i} bizName={bizName} tagline={tagline}
@@ -542,7 +526,7 @@ const FullResults = ({logos, bizName, tagline, answers}) => {
       {/* PDF + CTA */}
       <div style={{background:C.plum,padding:"52px 44px",textAlign:"center"}}>
         <p style={{fontFamily:"'Great Vibes',cursive",fontSize:40,color:C.softPink,marginBottom:12}}>Ready to Brand Your Business?</p>
-        <p style={{fontFamily:"'Raleway',sans-serif",fontSize:13,fontWeight:300,color:"rgba(251,234,240,.7)",marginBottom:30,maxWidth:380,margin:"0 auto 30px",lineHeight:1.9}}>Download all 5 logos as SVG files, or grab the full PDF style guide with color codes and next steps.</p>
+        <p style={{fontFamily:"'Raleway',sans-serif",fontSize:13,fontWeight:300,color:"rgba(251,234,240,.7)",marginBottom:30,maxWidth:420,margin:"0 auto 30px",lineHeight:1.9}}>For best results, download each logo individually as an SVG file using the buttons below, then download the PDF as your brand reference guide for colors, next steps and style direction.</p>
         <button className="plb-btn hot" onClick={()=>downloadPDF(logos,bizName,tagline,answers)} style={{marginBottom:14,minWidth:260}}>
           ⬇ Download PDF Style Guide
         </button>
