@@ -306,44 +306,115 @@ const downloadPDF = (logos, bizName, tagline, answers) => {
   });
   y += 24;
 
-  // Logo concepts — 2 per row
+  // Logo concepts — draw each one natively in PDF
   doc.setDrawColor(...hexRgb(C.softPink)); doc.setLineWidth(0.4); doc.line(M, y-3, W-M, y-3);
   doc.setFont("helvetica","bold"); doc.setFontSize(7); doc.setTextColor(...hexRgb(C.berry));
   doc.setCharSpace(2); doc.text("LOGO CONCEPTS — STYLE DIRECTIONS", M, y+2); doc.setCharSpace(0);
   y += 10;
 
-  const cbW2 = (W-M*2-6)/2;
+  const cbW2 = (W-M*2-8)/3;
+  // Draw 5 concepts — first row 3, second row 2
   logos.forEach((logo,i) => {
-    const col = i%2;
-    if(col===0 && i>0) y += 52;
-    const bxReal = M + col*(cbW2+6);
+    const row = i < 3 ? 0 : 1;
+    const col = i < 3 ? i : i-3;
+    const rowY = y + row * 58;
+    const cx = M + col*(cbW2+4);
+    const bH = 52;
 
+    // Only draw row 2 offset if we have enough logos
+    const bxReal = i < 3 ? cx : M + (col*(cbW2+4)) + cbW2/2 - cbW2/2 + (i===3 ? 0 : cbW2+4);
+
+    const p = logo.primaryColor||C.hotPink;
+    const s = logo.secondaryColor||C.plum;
+    const a = logo.accentColor||C.softPink;
+    const nm = (bizName||"Brand").slice(0,12);
+    const sh = (bizName||"B").split(" ").map(w=>w[0]).join("").toUpperCase().slice(0,2);
+
+    // Box
     doc.setFillColor(...hexRgb(C.white));
-    doc.rect(bxReal, y, (W-M*2-6)/2, 46, "F");
+    doc.rect(bxReal, rowY, cbW2, bH, "F");
     doc.setDrawColor(...hexRgb(C.softPink));
-    doc.rect(bxReal, y, (W-M*2-6)/2, 46);
+    doc.setLineWidth(0.4);
+    doc.rect(bxReal, rowY, cbW2, bH);
 
-    // Color accent bar
-    try { doc.setFillColor(...hexRgb(logo.primaryColor||C.hotPink)); }
-    catch(e){ doc.setFillColor(...hexRgb(C.hotPink)); }
-    doc.rect(bxReal, y, (W-M*2-6)/2, 2, "F");
+    // Color top bar
+    try { doc.setFillColor(...hexRgb(p)); } catch(e) { doc.setFillColor(...hexRgb(C.hotPink)); }
+    doc.rect(bxReal, rowY, cbW2, 2, "F");
 
-    doc.setFont("helvetica","bold"); doc.setFontSize(7); doc.setTextColor(...hexRgb(C.berry));
-    doc.setCharSpace(1.5);
-    doc.text("CONCEPT "+["A","B","C","D","E"][i], bxReal+(W-M*2-6)/4, y+8, {align:"center"});
+    // Concept label
+    doc.setFont("helvetica","bold"); doc.setFontSize(6); doc.setTextColor(...hexRgb(C.berry));
+    doc.setCharSpace(1.2);
+    doc.text("CONCEPT "+["A","B","C","D","E"][i], bxReal+cbW2/2, rowY+7, {align:"center"});
     doc.setCharSpace(0);
 
-    doc.setFont("helvetica","italic"); doc.setFontSize(8); doc.setTextColor(...hexRgb(C.plum));
-    doc.text((logo.styleName||"").slice(0,24), bxReal+(W-M*2-6)/4, y+17, {align:"center"});
+    // Draw logo icon centered in box
+    const iconX = bxReal + cbW2/2;
+    const iconY = rowY + 22;
+    const style = logo.svgStyle || "badge";
 
-    doc.setFont("helvetica","normal"); doc.setFontSize(7); doc.setTextColor(...hexRgb(C.inkLight));
-    const dl = doc.splitTextToSize(logo.description||"", (W-M*2-6)/2-8);
-    doc.text(dl.slice(0,2), bxReal+4, y+25);
+    try {
+      if(style === "badge" || style === "monogram") {
+        // Circle with monogram
+        doc.setFillColor(...hexRgb(p));
+        doc.setGState(doc.GState({opacity:0.12}));
+        doc.circle(iconX, iconY, 9, "F");
+        doc.setGState(doc.GState({opacity:1}));
+        doc.setDrawColor(...hexRgb(p));
+        doc.setLineWidth(1);
+        doc.circle(iconX, iconY, 9, "S");
+        doc.setLineWidth(0.4);
+        doc.circle(iconX, iconY, 7, "S");
+        doc.setFont("helvetica","bold"); doc.setFontSize(8);
+        doc.setTextColor(...hexRgb(s));
+        doc.text(sh, iconX, iconY+3, {align:"center"});
+      } else if(style === "geometric") {
+        // Bold triangle accent + text
+        doc.setFillColor(...hexRgb(p));
+        doc.setGState(doc.GState({opacity:0.8}));
+        doc.triangle(iconX-12, iconY+7, iconX-5, iconY-7, iconX-5, iconY+7, "F");
+        doc.setGState(doc.GState({opacity:1}));
+        doc.setFont("helvetica","bold"); doc.setFontSize(7);
+        doc.setTextColor(...hexRgb(s));
+        doc.text(nm.toUpperCase(), iconX+2, iconY+3, {align:"left"});
+        doc.setFillColor(...hexRgb(p));
+        doc.rect(iconX-5, iconY+8, cbW2-8, 1.5, "F");
+      } else if(style === "minimal") {
+        // Elegant lines with name
+        doc.setDrawColor(...hexRgb(p));
+        doc.setLineWidth(0.6);
+        doc.line(bxReal+6, iconY-4, bxReal+cbW2-6, iconY-4);
+        doc.setFont("helvetica","italic"); doc.setFontSize(8);
+        doc.setTextColor(...hexRgb(s));
+        doc.text(nm, iconX, iconY+3, {align:"center"});
+        doc.line(bxReal+6, iconY+7, bxReal+cbW2-6, iconY+7);
+        doc.setFillColor(...hexRgb(p));
+        doc.circle(bxReal+4, iconY+1.5, 2, "F");
+        doc.circle(bxReal+cbW2-4, iconY+1.5, 2, "F");
+      } else if(style === "script") {
+        // Diamond outline with name
+        doc.setFillColor(...hexRgb(p));
+        doc.setGState(doc.GState({opacity:0.1}));
+        doc.triangle(iconX, iconY-10, iconX+10, iconY, iconX, iconY+10, "F");
+        doc.triangle(iconX, iconY-10, iconX-10, iconY, iconX, iconY+10, "F");
+        doc.setGState(doc.GState({opacity:1}));
+        doc.setDrawColor(...hexRgb(p));
+        doc.setLineWidth(0.8);
+        doc.line(iconX, iconY-10, iconX+10, iconY);
+        doc.line(iconX+10, iconY, iconX, iconY+10);
+        doc.line(iconX, iconY+10, iconX-10, iconY);
+        doc.line(iconX-10, iconY, iconX, iconY-10);
+        doc.setFont("helvetica","bolditalic"); doc.setFontSize(7);
+        doc.setTextColor(...hexRgb(s));
+        doc.text(sh, iconX, iconY+2.5, {align:"center"});
+      }
+    } catch(e) {}
 
-    doc.setFont("helvetica","normal"); doc.setFontSize(6.5); doc.setTextColor(...hexRgb(C.berry));
-    doc.text("Fonts: "+(logo.fontStyle||""), bxReal+4, y+40);
+    // Business name below icon
+    doc.setFont("helvetica","italic"); doc.setFontSize(6.5);
+    doc.setTextColor(...hexRgb(s));
+    doc.text(nm, iconX, rowY+bH-5, {align:"center"});
   });
-  y += 56;
+  y += 120;
 
   // Usage tips
   if(y < H-50){
