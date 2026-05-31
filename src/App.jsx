@@ -312,12 +312,11 @@ const downloadPDF = (logos, bizName, tagline, answers) => {
   doc.setCharSpace(2); doc.text("LOGO CONCEPTS — STYLE DIRECTIONS", M, y+2); doc.setCharSpace(0);
   y += 10;
 
+  const cbW2 = (W-M*2-6)/2;
   logos.forEach((logo,i) => {
     const col = i%2;
-    const bx = M + col*(cbW2+6);
     if(col===0 && i>0) y += 52;
-    const cbW2 = (W-M*2-6)/2;
-    const bxReal = M + col*((W-M*2-6)/2+6);
+    const bxReal = M + col*(cbW2+6);
 
     doc.setFillColor(...hexRgb(C.white));
     doc.rect(bxReal, y, (W-M*2-6)/2, 46, "F");
