@@ -1,9 +1,6 @@
 import { useState, useEffect } from "react";
 import { jsPDF } from "jspdf";
 
-const PAYMENT_LINK = "https://www.poshpinkmarketing.com/product-page/posh-pink-logo-builder";
-const PRICE = "$47";
-
 const C = {
   hotPink:   "#ff1493",
   bubblegum: "#ff69b4",
@@ -146,7 +143,6 @@ const buildSVG = (logo, bizName, tagline) => {
       <line x1="80" y1="200" x2="220" y2="200" stroke="${p}" stroke-width="0.8"/>
       ${tag ? `<text x="150" y="218" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" fill="${p}" letter-spacing="2" font-style="italic">${tag}</text>` : ""}
     </svg>`,
-
     geometric: `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180" viewBox="0 0 320 180">
       <defs>
         <linearGradient id="geo${id}" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -162,7 +158,6 @@ const buildSVG = (logo, bizName, tagline) => {
       <rect x="82" y="122" width="220" height="3" fill="url(#geo${id})" rx="1.5"/>
       ${tag ? `<text x="82" y="142" font-family="Arial,sans-serif" font-size="10" fill="${p}" letter-spacing="3">${tag.toUpperCase()}</text>` : ""}
     </svg>`,
-
     minimal: `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="160" viewBox="0 0 300 160">
       <defs>
         <linearGradient id="min${id}" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -183,7 +178,6 @@ const buildSVG = (logo, bizName, tagline) => {
       <line x1="150" y1="${tag ? "126" : "120"}" x2="150" y2="${tag ? "146" : "140"}" stroke="${p}" stroke-width="0.8"/>
       <circle cx="150" cy="${tag ? "150" : "144"}" r="3" fill="${p}"/>
     </svg>`,
-
     script: `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="200" viewBox="0 0 320 200">
       <defs>
         <linearGradient id="scr${id}" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -203,7 +197,6 @@ const buildSVG = (logo, bizName, tagline) => {
       <line x1="10" y1="100" x2="30" y2="80" stroke="${a}" stroke-width="0.6"/>
       <line x1="310" y1="100" x2="290" y2="80" stroke="${a}" stroke-width="0.6"/>
     </svg>`,
-
     monogram: `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="220" viewBox="0 0 300 220">
       <defs>
         <linearGradient id="mon${id}" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -241,47 +234,33 @@ const downloadSVG = (svg, name, index) => {
 const downloadPDF = (logos, bizName, tagline, answers) => {
   const doc = new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
   const W=210,H=297,M=18;
-  const PLUM = "#4b1528";
-  const PINK = "#ff69b4";
-  const WHITE = "#ffffff";
-  const TEXT = "#4b1528";
-
+  const PLUM="#4b1528",PINK="#ff69b4",WHITE="#ffffff",TEXT="#4b1528";
   doc.setFillColor(...hexRgb(WHITE)); doc.rect(0,0,W,H,"F");
   doc.setFillColor(...hexRgb(PLUM)); doc.rect(0,0,6,H,"F");
   doc.setFillColor(...hexRgb(PINK)); doc.rect(W-6,0,6,H,"F");
   doc.setDrawColor(...hexRgb(PLUM)); doc.setLineWidth(2); doc.line(0,0,W,0);
   doc.setDrawColor(...hexRgb(PINK)); doc.setLineWidth(2); doc.line(0,H-0.5,W,H-0.5);
   doc.setFillColor(...hexRgb(PLUM)); doc.rect(6,0,W-12,48,"F");
-
   doc.setFont("helvetica","bold"); doc.setFontSize(26); doc.setTextColor(...hexRgb(WHITE));
-  doc.text((bizName||"Your Brand").slice(0,28), W/2, 22, {align:"center"});
+  doc.text((bizName||"Your Brand").slice(0,28),W/2,22,{align:"center"});
   doc.setFont("helvetica","bold"); doc.setFontSize(8); doc.setTextColor(...hexRgb(PINK));
-  doc.text("POSH PINK LOGO BUILDER — BRAND REFERENCE GUIDE", W/2, 34, {align:"center"});
-  if(tagline){
-    doc.setFont("helvetica","italic"); doc.setFontSize(8); doc.setTextColor(...hexRgb(WHITE));
-    doc.text(tagline, W/2, 42, {align:"center"});
-  }
-
-  let y = 58;
-
-  const sec = (label, yy) => {
-    doc.setDrawColor(...hexRgb(PLUM)); doc.setLineWidth(0.8); doc.line(M, yy-3, W/2-2, yy-3);
-    doc.setDrawColor(...hexRgb(PINK)); doc.setLineWidth(0.8); doc.line(W/2+2, yy-3, W-M, yy-3);
+  doc.text("POSH PINK LOGO BUILDER — BRAND REFERENCE GUIDE",W/2,34,{align:"center"});
+  if(tagline){doc.setFont("helvetica","italic"); doc.setFontSize(8); doc.setTextColor(...hexRgb(WHITE)); doc.text(tagline,W/2,42,{align:"center"});}
+  let y=58;
+  const sec=(label,yy)=>{
+    doc.setDrawColor(...hexRgb(PLUM)); doc.setLineWidth(0.8); doc.line(M,yy-3,W/2-2,yy-3);
+    doc.setDrawColor(...hexRgb(PINK)); doc.setLineWidth(0.8); doc.line(W/2+2,yy-3,W-M,yy-3);
     doc.setFont("helvetica","bold"); doc.setFontSize(8); doc.setTextColor(...hexRgb(PLUM));
-    doc.text(label.toUpperCase(), W/2, yy, {align:"center"});
-    return yy + 9;
+    doc.text(label.toUpperCase(),W/2,yy,{align:"center"});
+    return yy+9;
   };
-
   doc.setFont("helvetica","bold"); doc.setFontSize(8.5); doc.setTextColor(...hexRgb(TEXT));
-  doc.text("Your 5 logo concepts are available as individual SVG downloads.", W/2, y, {align:"center"});
-  doc.text("Use this guide as your brand reference for colors, style and next steps.", W/2, y+6, {align:"center"});
-  y += 18;
-
-  y = sec("Your Signature Color Palette", y);
-  const cols = [logos[0]?.primaryColor,logos[0]?.secondaryColor,logos[0]?.accentColor,logos[1]?.primaryColor,logos[2]?.primaryColor].filter((c,i,a)=>c&&a.indexOf(c)===i).slice(0,5);
-  const swW=28,swH=22,swGap=5;
-  const totalSwW=cols.length*(swW+swGap)-swGap;
-  const swStartX=(W-totalSwW)/2;
+  doc.text("Your 5 logo concepts are available as individual SVG downloads.",W/2,y,{align:"center"});
+  doc.text("Use this guide as your brand reference for colors, style and next steps.",W/2,y+6,{align:"center"});
+  y+=18;
+  y=sec("Your Signature Color Palette",y);
+  const cols=[logos[0]?.primaryColor,logos[0]?.secondaryColor,logos[0]?.accentColor,logos[1]?.primaryColor,logos[2]?.primaryColor].filter((c,i,a)=>c&&a.indexOf(c)===i).slice(0,5);
+  const swW=28,swH=22,swGap=5,totalSwW=cols.length*(swW+swGap)-swGap,swStartX=(W-totalSwW)/2;
   cols.forEach((hex,i)=>{
     try{
       const sx=swStartX+i*(swW+swGap);
@@ -294,16 +273,13 @@ const downloadPDF = (logos, bizName, tagline, answers) => {
     }catch(e){}
   });
   y+=swH+10;
-
   y=sec("Your 5 Logo Style Directions",y);
   doc.setFont("helvetica","bold"); doc.setFontSize(8); doc.setTextColor(...hexRgb(TEXT));
   doc.text("Download your SVG files from the quiz page to see the full designs.",W/2,y,{align:"center"});
   y+=10;
-
   logos.forEach((logo,i)=>{
     if(y>H-45)return;
-    const p=logo.primaryColor||PLUM;
-    const rowH=24;
+    const p=logo.primaryColor||PLUM,rowH=24;
     doc.setFillColor(...hexRgb(WHITE)); doc.rect(M,y,W-M*2,rowH,"F");
     doc.setDrawColor(...hexRgb(PLUM)); doc.setLineWidth(0.4); doc.rect(M,y,W-M*2,rowH);
     try{doc.setFillColor(...hexRgb(p));}catch(e){doc.setFillColor(...hexRgb(PLUM));}
@@ -317,15 +293,9 @@ const downloadPDF = (logos, bizName, tagline, answers) => {
     y+=rowH+4;
   });
   y+=4;
-
   if(y<H-65){
     y=sec("Your Brand Preferences",y);
-    const prefs=[
-      {label:"Industry",val:answers?.industry||""},
-      {label:"Style",val:(answers?.style||[]).join(", ")},
-      {label:"Colors",val:(answers?.colors||[]).join(", ")},
-      {label:"Feeling",val:answers?.feel||""},
-    ].filter(p=>p.val);
+    const prefs=[{label:"Industry",val:answers?.industry||""},{label:"Style",val:(answers?.style||[]).join(", ")},{label:"Colors",val:(answers?.colors||[]).join(", ")},{label:"Feeling",val:answers?.feel||""}].filter(p=>p.val);
     prefs.forEach(p=>{
       if(y>H-40)return;
       doc.setFont("helvetica","bold"); doc.setFontSize(8); doc.setTextColor(...hexRgb(TEXT));
@@ -335,15 +305,9 @@ const downloadPDF = (logos, bizName, tagline, answers) => {
     });
     y+=4;
   }
-
   if(y<H-60){
     y=sec("Next Steps",y);
-    const tips=[
-      "Download all 5 logo SVGs from your quiz results page.",
-      "Share your favorite with a designer to recreate as a polished final file.",
-      "Use the hex codes above consistently across all your marketing.",
-      "Get your full brand kit at poshpinkbrandkitbuilder.netlify.app",
-    ];
+    const tips=["Download all 5 logo SVGs from your quiz results page.","Share your favorite with a designer to recreate as a polished final file.","Use the hex codes above consistently across all your marketing.","Get your full brand kit at poshpinkbrandkitbuilder.netlify.app"];
     tips.forEach((tip,i)=>{
       if(y>H-28)return;
       doc.setFont("helvetica","bold"); doc.setFontSize(8); doc.setTextColor(...hexRgb(PINK));
@@ -354,13 +318,11 @@ const downloadPDF = (logos, bizName, tagline, answers) => {
       y+=tl.length*4.5+6;
     });
   }
-
   doc.setFillColor(...hexRgb(PLUM)); doc.rect(6,H-18,W-12,18,"F");
   doc.setFont("helvetica","bold"); doc.setFontSize(8); doc.setTextColor(...hexRgb(WHITE));
   doc.text("www.poshpinkmarketing.com",W/2,H-10,{align:"center"});
   doc.setFont("helvetica","bold"); doc.setFontSize(7); doc.setTextColor(...hexRgb(PINK));
   doc.text("hello@poshpinkmarketing.com",W/2,H-4,{align:"center"});
-
   doc.save(`${(bizName||"logo").replace(/\s+/g,"-").toLowerCase()}-brand-reference.pdf`);
 };
 
@@ -368,51 +330,13 @@ const LogoCard = ({logo,index,bizName,tagline,selected,onSelect}) => {
   const svg = buildSVG(logo,bizName,tagline);
   return (
     <div className={`plb-logo-card${selected?" selected":""}`} onClick={()=>onSelect(index)} style={{position:"relative"}}>
-      {selected&&(
-        <div style={{position:"absolute",top:10,right:10,width:24,height:24,borderRadius:"50%",background:C.hotPink,display:"flex",alignItems:"center",justifyContent:"center"}}>
-          <svg width="12" height="9" viewBox="0 0 12 9" fill="none"><polyline points="1,4.5 4.5,8 11,1" stroke={C.white} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-        </div>
-      )}
+      {selected&&(<div style={{position:"absolute",top:10,right:10,width:24,height:24,borderRadius:"50%",background:C.hotPink,display:"flex",alignItems:"center",justifyContent:"center"}}><svg width="12" height="9" viewBox="0 0 12 9" fill="none"><polyline points="1,4.5 4.5,8 11,1" stroke={C.white} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg></div>)}
       <p style={{fontFamily:"'Lato',sans-serif",fontSize:11,fontWeight:700,letterSpacing:".15em",color:C.berry,marginBottom:16}}>CONCEPT {["A","B","C","D","E"][index]}</p>
       <div style={{display:"flex",justifyContent:"center",alignItems:"center",minHeight:120,overflow:"hidden"}} dangerouslySetInnerHTML={{__html:svg}}/>
       <p style={{fontFamily:"'Lato',sans-serif",fontSize:12,fontWeight:600,color:C.inkLight,marginTop:16}}>{logo.description||""}</p>
     </div>
   );
 };
-
-const Teaser = ({logos,bizName,tagline,onPay}) => (
-  <div className="plb-fade">
-    <div style={{background:C.plum,padding:"52px 44px",position:"relative",overflow:"hidden"}}>
-      <div style={{position:"absolute",top:-80,right:-80,width:260,height:260,borderRadius:"50%",border:`1px solid rgba(255,20,147,.1)`,pointerEvents:"none"}}/>
-      <p style={{fontFamily:"'Lato',sans-serif",fontSize:11,fontWeight:700,letterSpacing:".25em",color:C.bubblegum,marginBottom:16}}>YOUR LOGO CONCEPTS</p>
-      <h1 style={{fontFamily:"'Lato',sans-serif",fontSize:42,fontWeight:900,color:C.white,marginBottom:18,lineHeight:1.1}}>5 Custom Logos,<br/>Just for You</h1>
-      <p style={{fontFamily:"'Lato',sans-serif",fontSize:15,fontWeight:400,lineHeight:1.8,color:"rgba(251,234,240,.8)",maxWidth:440}}>Your personalized logo concepts are ready. Each one is unique, built around your brand style, colors and personality.</p>
-    </div>
-    <div style={{background:C.white,padding:"36px 44px 32px",borderBottom:"1px solid #e8e8e8"}}>
-      <p style={{fontFamily:"'Lato',sans-serif",fontSize:11,fontWeight:700,letterSpacing:".2em",color:C.berry,marginBottom:20}}>PREVIEW — CONCEPT A</p>
-      <div style={{display:"flex",justifyContent:"center",padding:"24px",background:"#f8f8f8",border:"1px solid #e8e8e8",borderRadius:8}}>
-        <div dangerouslySetInnerHTML={{__html:buildSVG(logos[0],bizName,tagline)}}/>
-      </div>
-    </div>
-    <div style={{position:"relative"}}>
-      <div style={{filter:"blur(5px)",userSelect:"none",pointerEvents:"none",background:"#f8f8f8",padding:"32px 44px 28px"}}>
-        <p style={{fontFamily:"'Lato',sans-serif",fontSize:11,fontWeight:700,letterSpacing:".2em",color:C.berry,marginBottom:20}}>CONCEPTS B — E</p>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-          {[1,2,3,4].map(i=>(<div key={i} style={{height:120,background:C.white,border:"1px solid #e8e8e8",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{fontFamily:"'Lato',sans-serif",fontSize:13,fontWeight:700,color:"#cccccc",letterSpacing:".1em"}}>CONCEPT {["B","C","D","E"][i-1]}</p></div>))}
-        </div>
-      </div>
-      <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(255,255,255,.7)"}}>
-        <div style={{textAlign:"center",padding:"36px 40px",background:C.white,border:"2px solid #e8e8e8",borderRadius:16,maxWidth:380,boxShadow:"0 8px 40px rgba(0,0,0,.1)"}}>
-          <svg width="34" height="34" viewBox="0 0 34 34" fill="none" style={{marginBottom:14}}><rect x="7" y="15" width="20" height="13" rx="2" stroke={C.hotPink} strokeWidth="1.5" fill="none"/><path d="M11 15v-4a6 6 0 0112 0v4" stroke={C.hotPink} strokeWidth="1.5" strokeLinecap="round" fill="none"/><circle cx="17" cy="21.5" r="1.8" fill={C.hotPink}/></svg>
-          <h3 style={{fontFamily:"'Lato',sans-serif",fontSize:20,fontWeight:900,color:C.plum,marginBottom:10}}>Unlock All 5 Logo Concepts</h3>
-          <p style={{fontFamily:"'Lato',sans-serif",fontSize:14,fontWeight:400,color:"#666666",lineHeight:1.8,marginBottom:22}}>Get all 5 unique logo concepts plus a downloadable PDF style guide with color codes, font directions and next steps.</p>
-          <button className="plb-btn hot" onClick={onPay} style={{width:"100%",padding:"18px 0",fontSize:"15px",marginBottom:12}}>Unlock All 5 Logos — {PRICE}</button>
-          <p style={{fontFamily:"'Lato',sans-serif",fontSize:12,fontWeight:600,color:"#999999"}}>Secure payment · Instant SVG download</p>
-        </div>
-      </div>
-    </div>
-  </div>
-);
 
 const FullResults = ({logos,bizName,tagline,answers}) => {
   const [selected,setSelected]=useState(null);
@@ -453,7 +377,7 @@ const FullResults = ({logos,bizName,tagline,answers}) => {
       </div>
       <div style={{background:C.plum,padding:"52px 44px",textAlign:"center"}}>
         <p style={{fontFamily:"'Lato',sans-serif",fontSize:32,fontWeight:900,color:C.softPink,marginBottom:12}}>Ready to Brand Your Business?</p>
-        <p style={{fontFamily:"'Lato',sans-serif",fontSize:14,fontWeight:400,color:"rgba(251,234,240,.7)",marginBottom:30,maxWidth:420,margin:"0 auto 30px",lineHeight:1.8}}>For best results, download each logo as an SVG file above, then download the PDF as your brand reference guide with color codes and next steps.</p>
+        <p style={{fontFamily:"'Lato',sans-serif",fontSize:14,fontWeight:400,color:"rgba(251,234,240,.7)",marginBottom:30,maxWidth:420,margin:"0 auto 30px",lineHeight:1.8}}>Download each logo as an SVG file above, then grab the PDF as your brand reference guide with color codes and next steps.</p>
         <button className="plb-btn hot" onClick={()=>downloadPDF(logos,bizName,tagline,answers)} style={{marginBottom:14,minWidth:260}}>⬇ Download PDF Reference Guide</button>
         <br/>
         <a href="https://poshpinkbrandkitbuilder.netlify.app" style={{textDecoration:"none"}}><button className="plb-btn ghost" style={{marginTop:12}}>Get Your Full Brand Kit Too →</button></a>
@@ -465,22 +389,12 @@ const FullResults = ({logos,bizName,tagline,answers}) => {
 
 export default function App() {
   useEffect(()=>{injectStyles();},[]);
-  const urlPaid=new URLSearchParams(window.location.search).get("paid")==="true";
   const [step,setStep]=useState(0);
   const [answers,setAnswers]=useState({});
   const [logos,setLogos]=useState(null);
-  const [paid,setPaid]=useState(urlPaid);
   const [error,setError]=useState(null);
   const total=QUESTIONS.length;
   const curQ=QUESTIONS[step-1];
-
-  useEffect(()=>{
-    if(urlPaid){
-      const r=sessionStorage.getItem("plb_logos");
-      const a=sessionStorage.getItem("plb_answers");
-      if(r){setLogos(JSON.parse(r));setAnswers(JSON.parse(a||"{}"));setStep(total+2);}
-    }
-  },[]);
 
   const ans=(qId,val,type)=>{
     if(type==="text"){setAnswers(p=>({...p,[qId]:val}));return;}
@@ -522,8 +436,6 @@ Rules:
       const d=await res.json();
       if(!d.result)throw new Error("Empty");
       const parsed=JSON.parse(d.result.replace(/```json|```/g,"").trim());
-      sessionStorage.setItem("plb_logos",JSON.stringify(parsed.logos));
-      sessionStorage.setItem("plb_answers",JSON.stringify(answers));
       setLogos(parsed.logos);
       setStep(total+2);
     }catch(e){
@@ -532,7 +444,6 @@ Rules:
     }
   };
 
-  const pay=()=>{window.location.href=PAYMENT_LINK;};
   const wrap={maxWidth:620,margin:"0 auto",padding:"64px 24px"};
 
   return (
@@ -544,10 +455,9 @@ Rules:
           <h1 style={{fontFamily:"'Lato',sans-serif",fontSize:48,fontWeight:900,color:C.plum,marginBottom:20,lineHeight:1.1}}>Your Perfect Logo,<br/>In Minutes</h1>
           <p style={{fontFamily:"'Lato',sans-serif",fontSize:16,fontWeight:400,color:"#555555",lineHeight:1.8,marginBottom:44,maxWidth:420}}>Answer 7 quick questions and get 5 unique, AI-powered logo concepts tailored to your brand. Download as professional SVG files ready to use anywhere.</p>
           <button className="plb-btn" onClick={()=>setStep(1)}>Build My Logo</button>
-          <p style={{fontFamily:"'Lato',sans-serif",fontSize:13,fontWeight:600,color:"#999999",marginTop:16}}>About 2 minutes · 5 logo concepts · {PRICE}</p>
+          <p style={{fontFamily:"'Lato',sans-serif",fontSize:13,fontWeight:600,color:"#999999",marginTop:16}}>About 2 minutes · 5 logo concepts</p>
         </div>
       )}
-
       {step>=1&&step<=total&&curQ&&(
         <div key={step} className="plb-up" style={wrap}>
           <PPMLogo/>
@@ -564,9 +474,7 @@ Rules:
           </div>
         </div>
       )}
-
       {step===total+1&&(<div style={wrap}><PPMLogo/><Spinner msg="Designing your logos…"/></div>)}
-
       {step===total+2&&(
         <div style={{maxWidth:620,margin:"0 auto"}}>
           <div style={{padding:"56px 24px 0"}}>
@@ -581,7 +489,7 @@ Rules:
               <button className="plb-btn" onClick={()=>{setError(null);setStep(total);generate();}}>Try Again</button>
             </div>
           ):logos?(
-            paid?<FullResults logos={logos} bizName={answers["bizName"]} tagline={answers["tagline"]} answers={answers}/>:<Teaser logos={logos} bizName={answers["bizName"]} tagline={answers["tagline"]} onPay={pay}/>
+            <FullResults logos={logos} bizName={answers["bizName"]} tagline={answers["tagline"]} answers={answers}/>
           ):(
             <div style={{padding:"0 24px 60px"}}><Spinner msg="Preparing your logos…"/></div>
           )}
